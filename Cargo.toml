@@ -12,3 +12,4 @@ actix-cors = "0.7.0"
 derive_more = "0.99.17"
 miden-objects = { package = "miden-objects", git = "https://github.com/0xPolygonMiden/miden-base", branch = "main" }
 serde = { version = "1.0", features = ["derive"] }
+clap = { version = "4.5.1", features = ["derive"] }

@@ -1,10 +1,12 @@
 use actix_cors::Cors;
 use actix_files::Files;
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use clap::Parser;
 use cli::Cli;
 use configs::{Endpoint, FaucetTopLevelConfig};
 use handlers::get_tokens;
+use miden_objects::accounts::AccountId;
+use miden_tx::TransactionExecutor;
 use std::io;
 use std::net::ToSocketAddrs;
 
@@ -13,6 +15,13 @@ mod configs;
 mod errors;
 mod handlers;
 mod utils;
+
+#[derive(Clone)]
+pub struct FaucetState {
+    id: AccountId,
+    asset_amount: u32,
+    initial_balance: u32,
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -66,11 +75,21 @@ async fn main() -> std::io::Result<()> {
 
     println!("🚀 Starting server on: {}://{}:{}", protocol, host, port);
 
-    HttpServer::new(|| {
+    // let executor = TransactionExecutor::new(data_store)
+
+    // Instantiate faucet state
+    let faucet_state = FaucetState {
+        id: faucet_account.id(),
+        asset_amount: 100,
+        initial_balance: 1000,
+    };
+
+    HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
             .allowed_methods(vec!["GET"]);
         App::new()
+            .app_data(web::Data::new(faucet_state.clone()))
             .wrap(cors)
             .service(get_tokens)
             .service(Files::new("/", "src/static").index_file("index.html"))

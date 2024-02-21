@@ -3,13 +3,13 @@ use actix_files::Files;
 use actix_web::{App, HttpServer};
 use clap::Parser;
 use cli::Cli;
-use config::{Endpoint, FaucetTopLevelConfig};
+use configs::{Endpoint, FaucetTopLevelConfig};
 use handlers::get_tokens;
 use std::io;
 use std::net::ToSocketAddrs;
 
 mod cli;
-mod config;
+mod configs;
 mod errors;
 mod handlers;
 mod utils;

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -10,15 +12,27 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
-    /// Starts the server
-    Start {
-        #[clap(long, required = true)]
+    /// Initialise a new Miden faucet from arguments
+    Init {
+        #[clap(short, long, required = true)]
         token_symbol: String,
 
-        #[clap(long, required = true)]
-        decimals: u32,
+        #[clap(short, long, required = true)]
+        decimals: u8,
 
-        #[clap(long, required = true)]
+        #[clap(short, long, required = true)]
         max_supply: u64,
+
+        #[clap(short, long, required = true)]
+        config_path: PathBuf,
+    },
+
+    /// Imports an existing Miden faucet from specified file
+    Import {
+        #[clap(short, long, required = true)]
+        faucet_path: PathBuf,
+
+        #[clap(short, long, required = true)]
+        config_path: PathBuf,
     },
 }

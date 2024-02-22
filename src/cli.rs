@@ -25,6 +25,8 @@ pub enum Command {
 
         #[clap(short, long, required = true)]
         config_path: PathBuf,
+        // #[clap(short, long, required = true)]
+        // asset_amount: u32,
     },
 
     /// Imports an existing Miden faucet from specified file

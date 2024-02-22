@@ -6,21 +6,21 @@ use cli::Cli;
 use configs::{Endpoint, FaucetTopLevelConfig};
 use handlers::get_tokens;
 use miden_objects::accounts::AccountId;
-use miden_tx::TransactionExecutor;
 use std::io;
 use std::net::ToSocketAddrs;
 
 mod cli;
 mod configs;
+mod db;
 mod errors;
 mod handlers;
+mod rpc;
 mod utils;
 
 #[derive(Clone)]
 pub struct FaucetState {
     id: AccountId,
     asset_amount: u32,
-    initial_balance: u32,
 }
 
 #[actix_web::main]
@@ -38,6 +38,7 @@ async fn main() -> std::io::Result<()> {
             let faucet_config: FaucetTopLevelConfig = utils::load_config(config_path)
                 .extract()
                 .expect("Failed to load faucet config.");
+            // save to the data store
             (faucet_account, faucet_config)
         }
         cli::Command::Import {
@@ -48,6 +49,7 @@ async fn main() -> std::io::Result<()> {
             let faucet_config: FaucetTopLevelConfig = utils::load_config(config_path)
                 .extract()
                 .expect("Failed to load faucet config.");
+            // save to the data store
             (faucet_account, faucet_config)
         }
     };
@@ -75,13 +77,10 @@ async fn main() -> std::io::Result<()> {
 
     println!("🚀 Starting server on: {}://{}:{}", protocol, host, port);
 
-    // let executor = TransactionExecutor::new(data_store)
-
     // Instantiate faucet state
     let faucet_state = FaucetState {
         id: faucet_account.id(),
         asset_amount: 100,
-        initial_balance: 1000,
     };
 
     HttpServer::new(move || {
@@ -96,5 +95,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(addr)?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }

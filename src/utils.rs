@@ -65,3 +65,5 @@ pub fn import_fungible_faucet(path: &PathBuf) -> Account {
 pub fn load_config(config_file: &Path) -> Figment {
     Figment::from(Toml::file(config_file))
 }
+
+pub fn sync_faucet() -> 

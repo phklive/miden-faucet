@@ -1,6 +1,7 @@
 use crate::{errors::FaucetError, FaucetState};
 use actix_web::{get, http::header, web, HttpResponse, Result};
 use miden_objects::accounts::AccountId;
+use miden_tx::{ProvingOptions, TransactionExecutor, TransactionProver};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -23,6 +24,16 @@ pub async fn get_tokens(
 
     let bytes = "hello".as_bytes();
 
+    // Receive and hex user account id
+    // Instantiate asset that will be sent to user
+    // Instantiate VM code for mint
+    // Instantiate TransactionExecutor and execute transaction
+    let tx_executor = TransactionExecutor::new(data_store)
+    // Generate proof and send transaction to node
+    let proving_options = ProvingOptions::default();
+    let tx_prover = TransactionProver::new(proving_options);
+
+    // Send generated note to user
     Ok(HttpResponse::Ok()
         .content_type("application/octet-stream")
         .append_header(header::ContentDisposition {

@@ -23,10 +23,8 @@ pub enum Command {
         #[clap(short, long, required = true)]
         max_supply: u64,
 
-        #[clap(short, long, required = true)]
-        config_path: PathBuf,
-        // #[clap(short, long, required = true)]
-        // asset_amount: u32,
+        #[clap(short, long)]
+        asset_amount: u64,
     },
 
     /// Imports an existing Miden faucet from specified file
@@ -34,7 +32,7 @@ pub enum Command {
         #[clap(short, long, required = true)]
         faucet_path: PathBuf,
 
-        #[clap(short, long, required = true)]
-        config_path: PathBuf,
+        #[clap(short, long)]
+        asset_amount: u64,
     },
 }

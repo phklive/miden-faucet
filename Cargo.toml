@@ -12,10 +12,9 @@ actix-cors = "0.7.0"
 derive_more = "0.99.17"
 figment = { version = "0.10", features = ["toml", "env", "test"] }
 miden-lib = { package = "miden-lib", git = "https://github.com/0xPolygonMiden/miden-base", branch = "main", features = ["concurrent", "testing"] }
+miden-client = { git = "https://github.com/0xPolygonMiden/miden-client", branch = "main", features = [ "testing", "concurrent", ] }
 miden-node-proto = { package = "miden-node-proto", git = "https://github.com/0xPolygonMiden/miden-node.git", branch = "main", default-features = false }
 miden-objects = { package = "miden-objects", git = "https://github.com/0xPolygonMiden/miden-base", branch = "main" }
-miden-tx = { package = "miden-tx", git = "https://github.com/0xPolygonMiden/miden-base", branch = "main" }
-rusqlite = { version = "0.31.0", features = ["bundled"] }
 serde = { version = "1.0", features = ["derive"] }
-tonic = { version = "0.11" }
 clap = { version = "4.5.1", features = ["derive"] }
+async-mutex = "1.4.0"

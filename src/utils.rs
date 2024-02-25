@@ -1,12 +1,12 @@
 use std::{
     fs::File,
-    io::Read,
+    io::{self, Read},
     path::{Path, PathBuf},
 };
 
-use figment::{
-    providers::{Format, Toml},
-    Figment,
+use miden_client::{
+    client::{rpc::TonicRpcClient, Client},
+    store::{accounts::AuthInfo, data_store::SqliteDataStore},
 };
 use miden_lib::{accounts::faucets::create_basic_fungible_faucet, AuthScheme};
 use miden_objects::{
@@ -18,7 +18,12 @@ use miden_objects::{
 };
 
 /// Creates a Miden fungible faucet from arguments
-pub fn create_fungible_faucet(token_symbol: &String, decimals: &u8, max_supply: &u64) -> Account {
+pub fn create_fungible_faucet(
+    token_symbol: &str,
+    decimals: &u8,
+    max_supply: &u64,
+    client: &mut Client<TonicRpcClient, SqliteDataStore>,
+) -> Result<Account, io::Error> {
     let token_symbol = TokenSymbol::new(token_symbol).expect("Failed to parse token_symbol.");
 
     // Instantiate init_seed
@@ -31,21 +36,33 @@ pub fn create_fungible_faucet(token_symbol: &String, decimals: &u8, max_supply: 
         pub_key: keypair.public_key(),
     };
 
-    let (account, _) = create_basic_fungible_faucet(
+    let (account, account_seed) = create_basic_fungible_faucet(
         init_seed,
         token_symbol,
-        decimals.clone(),
-        Felt::try_from(max_supply.clone()).expect("Max_supply is outside of the possible range."),
+        *decimals,
+        Felt::try_from(*max_supply).expect("Max_supply is outside of the possible range."),
         auth_scheme,
     )
     .expect("Failed to generate faucet account.");
 
-    account
+    client
+        .insert_account(&account, account_seed, &AuthInfo::RpoFalcon512(keypair))
+        .map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Failed to insert account into client.",
+            )
+        })?;
+
+    Ok(account)
 }
 
 /// Imports a Miden fungible faucet from a file
-pub fn import_fungible_faucet(path: &PathBuf) -> Account {
-    let path = Path::new(path);
+pub fn import_fungible_faucet(
+    faucet_path: &PathBuf,
+    client: &mut Client<TonicRpcClient, SqliteDataStore>,
+) -> Result<Account, io::Error> {
+    let path = Path::new(faucet_path);
     let mut file = File::open(path).expect("Failed to open file.");
 
     let mut contents = Vec::new();
@@ -53,15 +70,13 @@ pub fn import_fungible_faucet(path: &PathBuf) -> Account {
 
     let account_data =
         AccountData::read_from_bytes(&contents).expect("Failed to deserialize faucet from file.");
-    account_data.account
-}
 
-/// Loads the user configuration.
-///
-/// This function will look for the configuration file at the provided path. If the path is
-/// relative, searches in parent directories all the way to the root as well.
-///
-/// The above configuration options are indented to support easy of packaging and deployment.
-pub fn load_config(config_file: &Path) -> Figment {
-    Figment::from(Toml::file(config_file))
+    client.import_account(account_data.clone()).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Failed to import account into client.",
+        )
+    })?;
+
+    Ok(account_data.account)
 }

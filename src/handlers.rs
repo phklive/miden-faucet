@@ -4,16 +4,30 @@ use miden_client::client::transactions::TransactionTemplate;
 use miden_objects::{
     accounts::AccountId, assets::FungibleAsset, notes::NoteId, utils::serde::Serializable,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
-struct User {
+struct FaucetRequest {
     account_id: String,
+}
+
+#[derive(Serialize)]
+struct FaucetIdResponse {
+    faucet_id: String,
+}
+
+#[get("/faucet_id")]
+pub async fn faucet_id(state: web::Data<FaucetState>) -> HttpResponse {
+    let response = FaucetIdResponse {
+        faucet_id: state.id.to_string(),
+    };
+
+    HttpResponse::Ok().json(response)
 }
 
 #[get("/get_tokens")]
 pub async fn get_tokens(
-    req: web::Query<User>,
+    req: web::Query<FaucetRequest>,
     state: web::Data<FaucetState>,
 ) -> Result<HttpResponse> {
     println!("Received a request with account_id: {}", req.account_id);

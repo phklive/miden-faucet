@@ -37,6 +37,9 @@ body {
     background-color: rgb(17, 24, 39);
     width: 100%;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #title {
@@ -70,6 +73,11 @@ body {
     border: 1px solid #ccc;
     margin-bottom: 30px;
     width: 300px;
+}
+
+#faucetId {
+  color: white;
+  margin-top: 4px;
 }
 
 #button {

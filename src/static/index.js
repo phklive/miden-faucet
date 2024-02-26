@@ -1,3 +1,15 @@
+window.onload = function() {
+    fetch('http://localhost:8080/faucet_id') // Adjust the URL as per your server
+        .then(response => response.json()) // Process the response as JSON
+        .then(data => {
+            document.getElementById('faucetId').textContent = data.faucet_id; // Accessing the 'id' field from JSON
+        })
+        .catch(error => {
+            console.error('Error fetching Faucet ID:', error);
+            document.getElementById('faucetId').textContent = 'Error loading Faucet ID.';
+        });
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     let button = document.getElementById('button');
     let accountIdInput = document.getElementById('account-id');
@@ -18,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
             errorMessage.textContent = "Invalid Account ID."
             errorMessage.style.display = 'block';
         } else {
-            fetch(`http://127.0.0.1:8080/get_tokens?account_id=${accountId}`)
+            fetch(`http://localhost:8080/get_tokens?account_id=${accountId}`)
                 .then(response => {
                     if (!response.ok) {
                         console.log(response.text)

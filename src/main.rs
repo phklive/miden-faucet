@@ -4,7 +4,7 @@ use actix_web::{web, App, HttpServer};
 use async_mutex::Mutex;
 use clap::Parser;
 use cli::Cli;
-use handlers::get_tokens;
+use handlers::{faucet_id, get_tokens};
 use miden_client::client::rpc::TonicRpcClient;
 use miden_client::client::Client;
 use miden_client::config::{ClientConfig, RpcConfig, StoreConfig};
@@ -99,6 +99,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(faucet_state.clone()))
             .wrap(cors)
+            .service(faucet_id)
             .service(get_tokens)
             .service(Files::new("/", "src/static").index_file("index.html"))
     })

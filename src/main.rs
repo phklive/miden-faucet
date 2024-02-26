@@ -1,6 +1,9 @@
 use actix_cors::Cors;
 use actix_files::Files;
-use actix_web::{web, App, HttpServer};
+use actix_web::{
+    middleware::{DefaultHeaders, Logger},
+    web, App, HttpServer,
+};
 use async_mutex::Mutex;
 use clap::Parser;
 use cli::Cli;
@@ -29,6 +32,8 @@ pub struct FaucetState {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let cli = Cli::parse();
+
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
     // Setup the data_store
     let store_config = StoreConfig::default();
@@ -73,10 +78,12 @@ async fn main() -> std::io::Result<()> {
     })?;
 
     // Sync client
-    client
-        .sync_state()
-        .await
-        .map_err(|_| io::Error::new(io::ErrorKind::ConnectionRefused, "Failed to sync state."))?;
+    client.sync_state().await.map_err(|e| {
+        io::Error::new(
+            io::ErrorKind::ConnectionRefused,
+            format!("Failed to sync state: {e:?}"),
+        )
+    })?;
 
     println!(
         "✅ Faucet setup successful, account id: {}",
@@ -99,9 +106,16 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(faucet_state.clone()))
             .wrap(cors)
+            .wrap(Logger::default())
+            .wrap(DefaultHeaders::new().add(("Cache-Control", "no-cache")))
             .service(faucet_id)
             .service(get_tokens)
-            .service(Files::new("/", "src/static").index_file("index.html"))
+            .service(
+                Files::new("/", "src/static")
+                    .use_etag(false)
+                    .use_last_modified(false)
+                    .index_file("index.html"),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()
